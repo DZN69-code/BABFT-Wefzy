@@ -49,18 +49,16 @@ DiscordButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 DiscordButton.TextScaled = true
 DiscordButton.MouseButton1Click:Connect(function()
     setclipboard("https://discord.gg/Qggg4Ht9cs")
-    print("Discord link copied to clipboard!")
 end)
 
 ToggleButton.Parent = Frame
-ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
+ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 ToggleButton.Size = UDim2.new(1, 0, 0, 40)
 ToggleButton.Text = "Toggle Hub Visibility"
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleButton.TextScaled = true
 ToggleButton.MouseButton1Click:Connect(function()
     Frame.Visible = not Frame.Visible
-    print("Hub visibility toggled")
 end)
 
 local ButtonCorner = UICorner:Clone()
@@ -75,13 +73,27 @@ ButtonCorner3.Parent = DiscordButton
 local ButtonCorner4 = UICorner:Clone()
 ButtonCorner4.Parent = ToggleButton
 
+StopAutoFarmButton.MouseButton1Click:Connect(function()
+    onFarm = false
+    AutoFarmButton.Text = "Auto Farm: OFF"
+    AutoFarmButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    StopAutoFarmButton.Visible = false
+
+    if autoFarmScript then
+        _G.StopAutoFarm = true
+        autoFarmScript = nil
+    end
+end)
+
 AutoFarmButton.MouseButton1Click:Connect(function()
     onFarm = not onFarm
     if onFarm then
         AutoFarmButton.Text = "Auto Farm: ON"
         AutoFarmButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
         StopAutoFarmButton.Visible = true
-        
+
+        _G.StopAutoFarm = false
+
         autoFarmScript = loadstring([[
             local VirtualUser = game:GetService("VirtualUser")
             local player = game:GetService("Players").LocalPlayer
@@ -102,6 +114,7 @@ AutoFarmButton.MouseButton1Click:Connect(function()
                     if not blackPart then continue end
                     
                     for _ = 1, 20 do
+                        if _G.StopAutoFarm then return end
                         VirtualUser:CaptureController()
                         VirtualUser:ClickButton2(Vector2.new())
                         rootPart.CFrame = blackPart.CFrame
@@ -111,13 +124,11 @@ AutoFarmButton.MouseButton1Click:Connect(function()
                 end
 
                 for i = 1, 300 do
+                    if _G.StopAutoFarm then return end
                     rootPart.CFrame = goldenChest.CFrame
                     rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-
                     wait(0.1)
-
                     if not (string.sub(rootPart:GetFullName():lower(), 1, 9) == "workspace") then break end
-
                     if i >= 200 then
                         humanoid.Health = 0
                     end
@@ -127,13 +138,11 @@ AutoFarmButton.MouseButton1Click:Connect(function()
             local farms = 0
 
             while wait() do
+                if _G.StopAutoFarm then return end
                 VirtualUser:CaptureController()
                 VirtualUser:ClickButton2(Vector2.new())
                 win()
-
                 farms += 1
-                print("Farms: " .. tostring(farms))
-
                 wait(1)
             end
         ]])
@@ -142,25 +151,13 @@ AutoFarmButton.MouseButton1Click:Connect(function()
         AutoFarmButton.Text = "Auto Farm: OFF"
         AutoFarmButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
         StopAutoFarmButton.Visible = false
-        
+
         if autoFarmScript then
             pcall(function() autoFarmScript = nil end)
         end
     end
 end)
 
-StopAutoFarmButton.MouseButton1Click:Connect(function()
-    onFarm = false
-    AutoFarmButton.Text = "Auto Farm: OFF"
-    AutoFarmButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    StopAutoFarmButton.Visible = false
-    
-    if autoFarmScript then
-        pcall(function() autoFarmScript = nil end)
-    end
-end)
-
--- Draggable Functionality
 local function makeDraggable(frame)
     local dragInput, dragStart, startPos
     local function update(input)
